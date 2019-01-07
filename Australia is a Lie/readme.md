@@ -1,0 +1,1 @@
+Australia is a Lie is the latest project I'm working on. It's quick and simple arcade mobile game. This code shows the logic of randomization of each character and setting it's properties, outfit etc. 
