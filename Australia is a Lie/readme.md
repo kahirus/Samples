@@ -8,4 +8,4 @@ smallest details that expose them.
 Reptalians, Illuminati and many more.
 
 
-This is the latest project I'm working on. This code shows the logic of randomization of each character and setting it's properties, outfit etc. 
+This is the latest project I'm working on. This code shows the logic of randomization of each character and setting it's properties, outfit etc. Also, a custom tool I've made to automaticly load all graphics assets for characters

@@ -1,62 +1,28 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
 
 public class BodyPart : MonoBehaviour
 {
-    public enum Type
-    {
-        Torso,
-        ArmLeft,
-        ArmRight,
-        Neck,
-        Head,
-        LegLeft,
-        LegRight
-    };
-
-    [System.Serializable]
-    public struct PartDetails
-    {
-        public Sprite sprite;
-        public bool isFemale, isDisabled, isLocked;
-        public Character.SkinColor skinColor;
-    }
-
-    [System.Serializable]
-    public struct PatternDetails
-    {
-        public Sprite sprite;
-        public bool isAgent, isFemale, isActive, isLocked;
-        public string ID;
-        public Constants.DifferenceType differenceType;
-    };
-
-    private void OnValidate()
+    public void OnValidate()
     {
         bool wasSet = false;
-        //if(patternDetails[patternDetails.Count - 1].sprite != null)
-        //{
-        //    PatternDetails temp = patternDetails[patternDetails.Count - 1];
-        //    bool isFemale = temp.sprite.name.Contains("_f_") ? true : false;
-        //    bool isAgent = temp.sprite.name.Contains("_agent_") ? true : false;
-        //    temp.isFemale = isFemale;
-        //    temp.isAgent = isAgent;          
-        //}
-        for(int i = 0; i < patternDetails.Count; i++)
+
+        for (int i = 0; i < patternDetails.Count; i++)
         {
-            PatternDetails temp = patternDetails[i];
+            Structs.PatternDetails temp = patternDetails[i];
             if (temp.sprite != null)
             {
                 wasSet = true;
-                bool isFemale = temp.sprite.name.Contains("_f_") ? true : false;
-                bool isAgent = temp.sprite.name.Contains("_agent_") ? true : false;
-                
-                temp.ID = temp.ID ?? GenerateID(temp.sprite.name, isAgent, isFemale);
-                temp.isFemale = isFemale;
+                bool isAgent = !temp.sprite.name.Contains("_civil_") ? true : false;
+
+                temp.forGender = setGender(temp.sprite.name);
                 temp.isAgent = isAgent;
                 temp.isActive = !isAgent;
+                temp.differenceType = isAgent ? parseDifferenceType(temp.sprite.name) : Constants.DifferenceType.Civil;
                 patternDetails[i] = temp;
             }
         }
@@ -67,14 +33,15 @@ public class BodyPart : MonoBehaviour
         }
         for (int i = 0; i < partDetails.Count; i++)
         {
-            PartDetails temp = partDetails[i];
+            Structs.PartDetails temp = partDetails[i];
             if (temp.sprite != null)
             {
                 wasSet = true;
                 bool isFemale = temp.sprite.name.Contains("_f_") ? true : false;
-                Character.SkinColor skin = temp.sprite.name.Contains("_b_") ? Character.SkinColor.Black : Character.SkinColor.White;
-                temp.isFemale = isFemale;
+                Constants.SkinColor skin = temp.sprite.name.Contains("_b_") ? Constants.SkinColor.Black : Constants.SkinColor.White;
+                temp.gender = isFemale ? Constants.Genders.Female : Constants.Genders.Male;
                 temp.skinColor = skin;
+
                 partDetails[i] = temp;
             }
         }
@@ -83,13 +50,13 @@ public class BodyPart : MonoBehaviour
             partDetails.Sort((s1, s2) => s1.sprite.name.CompareTo(s2.sprite.name));
         }
 
-        CommonMethods.ValidateIfNoDuplicates(patternDetails);
-        CommonMethods.ValidateIfNoDuplicates(partDetails);
+        //CommonMethods.ValidateIfNoDuplicates(patternDetails);
+        //CommonMethods.ValidateIfNoDuplicates(partDetails);
     }
 
-    public Type partType;
-    public List<PartDetails> partDetails;
-    public List<PatternDetails> patternDetails;
+    public Constants.BodyPartType partType;
+    public List<Structs.PartDetails> partDetails;
+    public List<Structs.PatternDetails> patternDetails;
     public SpriteRenderer pattern;
 
     public void SetBodyPart(int selectedSet)
@@ -101,16 +68,18 @@ public class BodyPart : MonoBehaviour
         }
     }
 
-    public Sprite SetPattern(ref bool isAgent, bool isFemale)
+    public Sprite SetPattern(ref bool isAgent, Constants.Genders gender)
     {
         bool _isAgent = isAgent;
-        List<PatternDetails> availablePatterns = patternDetails.Where(ptrn => ptrn.isAgent == _isAgent && ptrn.isFemale == isFemale && ptrn.isActive).ToList();
-        if(availablePatterns.Count == 0)
+        List<Structs.PatternDetails> availablePatterns = patternDetails.Where(ptrn => ptrn.isAgent == _isAgent 
+        && (ptrn.forGender == gender || ptrn.forGender == Constants.Genders.Both) 
+        && ptrn.isActive).ToList();
+        if (availablePatterns.Count == 0)
         {
-            availablePatterns = patternDetails.Where(ptrn => ptrn.isAgent == !_isAgent && ptrn.isFemale == isFemale && ptrn.isActive).ToList();
+            availablePatterns = patternDetails.Where(ptrn => ptrn.isAgent == !_isAgent && (ptrn.forGender == gender || ptrn.forGender == Constants.Genders.Both) && ptrn.isActive).ToList();
             isAgent = !isAgent;
         }
-      //  Debug.Log(partType + "    " + availablePatterns.Count);
+          Debug.Log(partType + "    " + availablePatterns.Count);
         pattern.sprite = availablePatterns[CommonMethods.RandomizeIndex(availablePatterns)].sprite;
 
         GetComponent<BodyPartGraphicOrder>().SetOrder();
@@ -128,5 +97,27 @@ public class BodyPart : MonoBehaviour
         string number = splitName.Last();
         return type + female + agent + number;
 
+    }
+
+    Constants.DifferenceType parseDifferenceType(string spriteName)
+    {
+        foreach (string bodyPartType in Enum.GetNames(typeof(Constants.DifferenceType)))
+        {
+            if (spriteName.Contains(bodyPartType.ToLower()))
+            {
+                return (Constants.DifferenceType)Enum.Parse(typeof(Constants.DifferenceType), bodyPartType, true);
+            }
+        }
+        return Constants.DifferenceType.Civil;
+    }
+
+    Constants.Genders setGender(string spriteName)
+    {
+        if (spriteName.Contains("_m_"))
+            return Constants.Genders.Male;
+        else if (spriteName.Contains("_f_"))
+            return Constants.Genders.Female;
+        else
+            return Constants.Genders.Both;
     }
 }

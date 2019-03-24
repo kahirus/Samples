@@ -10,12 +10,12 @@ public class OutfitController : MonoBehaviour
     public FaceController faceController;
     int selectedSet;
     List<BodyPart> bodyPartsWithPatterns;
-    public Sprite SetOutfit(ref bool isAgent, bool isFemale, Character.SkinColor skinColor)
+    public Sprite SetOutfit(ref bool isAgent, Constants.Genders gender, Constants.SkinColor skinColor)
     {
         bodyPartsWithPatterns = new List<BodyPart>();
-        List<BodyPart.PartDetails> availableParts = bodyParts[0].partDetails.Where(part => part.isFemale == isFemale && !part.isDisabled).ToList();
+        List<Structs.PartDetails> availableParts = bodyParts[0].partDetails.Where(part => (part.gender == gender || part.gender == Constants.Genders.Both) && !part.isDisabled).ToList();
 
-        BodyPart.PartDetails selectedBodyPart = availableParts[CommonMethods.RandomizeIndex(availableParts)];
+        Structs.PartDetails selectedBodyPart = availableParts[CommonMethods.RandomizeIndex(availableParts)];
         selectedSet = bodyParts[0].partDetails.IndexOf(selectedBodyPart);
 
         foreach (BodyPart bodyPart in bodyParts)
@@ -28,9 +28,9 @@ public class OutfitController : MonoBehaviour
         }
         //Na razie random 1 elementu
 
-        hairController.SetHair(isFemale);
-        faceController.SetFace(FaceController.FaceType.Basic, GetComponent<Character>(), isFemale, skinColor);
-        return bodyPartsWithPatterns[CommonMethods.RandomizeIndex(bodyPartsWithPatterns)].SetPattern(ref isAgent, isFemale);
+        hairController.SetHair(gender);
+        faceController.SetFace(Constants.FaceType.Basic, GetComponent<Character>(), gender, skinColor);
+        return bodyPartsWithPatterns[CommonMethods.RandomizeIndex(bodyPartsWithPatterns)].SetPattern(ref isAgent, gender);
 
     }
 }

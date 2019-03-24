@@ -8,7 +8,8 @@ public class Character : MonoBehaviour
     public InputManager inputManager;
     public OutfitController outfit;
     public FaceController faceController;
-    public bool isAgent, isMoving, isFemale;
+    public Constants.Genders gender;
+    public bool isAgent, isMoving;
     private bool breathOut;
     public float incrementBreathRate, rotationSpeed;
     //z racji tego że nie wiem po co jest ten array to zrobiłem sobie swój
@@ -18,20 +19,9 @@ public class Character : MonoBehaviour
     public float rotationScale = 8f;
     private float startingScale;
     public Vector3 lastTarget;
-    public FaceController.FaceType currentFace;
+    public Constants.FaceType currentFace;
     public Sprite selectedPattern;
-    public SkinColor skinColor;
-
-    public enum SkinColor
-    {
-        White,
-        Black
-    }
-    public enum Move
-    {
-        Left = -1,
-        Right = 1
-    }
+    public Constants.SkinColor skinColor;
 
     private void Start()
     {
@@ -40,16 +30,16 @@ public class Character : MonoBehaviour
             outfit = GetComponentInChildren<OutfitController>();
             startingScale = transform.localScale.x;
             isAgent = IsAgentOrFemale();
-            isFemale = IsAgentOrFemale();
-            skinColor = IsBlack() ? SkinColor.Black : SkinColor.White;
-            selectedPattern = outfit.SetOutfit(ref isAgent, isFemale, skinColor);
+            gender = IsAgentOrFemale() ? Constants.Genders.Female : Constants.Genders.Male;
+            skinColor = IsBlack() ? Constants.SkinColor.Black : Constants.SkinColor.White;
+            selectedPattern = outfit.SetOutfit(ref isAgent, gender, skinColor);
             StartBreathing();
-            faceController.SetFace(FaceController.FaceType.Basic, this, isFemale, skinColor);
+            faceController.SetFace(Constants.FaceType.Basic, this, gender, skinColor);
             lastTarget = transform.position;
         }
     }
 
-    public bool MoveCharacter(Move direction, float time, float endPoint)
+    public bool MoveCharacter(Constants.Move direction, float time, float endPoint)
     {
         GetComponent<Transform>().DOMoveX(endPoint * (int) direction, time);
         GetComponent<Transform>().DOLocalRotate(Vector3.zero, 1);
@@ -109,7 +99,7 @@ public class Character : MonoBehaviour
         StartCoroutine(waitForReturn());
         StartBreathing();
 
-        faceController.SetFace(FaceController.FaceType.Basic, this, isFemale, skinColor);
+        faceController.SetFace(Constants.FaceType.Basic, this, gender, skinColor);
 
     }
 
@@ -120,21 +110,21 @@ public class Character : MonoBehaviour
         {
             if (Mathf.Abs(transform.localPosition.x) > inputManager.faceChangeZoneX)
             {
-                if (currentFace == FaceController.FaceType.O)
+                if (currentFace == Constants.FaceType.O)
                 {
                     if (transform.localPosition.x < 0)
                     {
-                        faceController.SetFace(FaceController.FaceType.Sad, this, isFemale, skinColor);
+                        faceController.SetFace(Constants.FaceType.Sad, this, gender, skinColor);
                     }
                     else
                     {
-                        faceController.SetFace(FaceController.FaceType.Happy, this, isFemale, skinColor);
+                        faceController.SetFace(Constants.FaceType.Happy, this, gender, skinColor);
                     }
                 }
             }
-            else if (currentFace == FaceController.FaceType.Sad || currentFace == FaceController.FaceType.Happy)
+            else if (currentFace == Constants.FaceType.Sad || currentFace == Constants.FaceType.Happy)
             {
-                faceController.SetFace(FaceController.FaceType.O, this, isFemale, skinColor);
+                faceController.SetFace(Constants.FaceType.O, this, gender, skinColor);
             }
 
             if (transform.localRotation.z == 0)
