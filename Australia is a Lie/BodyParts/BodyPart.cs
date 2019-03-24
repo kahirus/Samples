@@ -49,9 +49,6 @@ public class BodyPart : MonoBehaviour
         {
             partDetails.Sort((s1, s2) => s1.sprite.name.CompareTo(s2.sprite.name));
         }
-
-        //CommonMethods.ValidateIfNoDuplicates(patternDetails);
-        //CommonMethods.ValidateIfNoDuplicates(partDetails);
     }
 
     public Constants.BodyPartType partType;

@@ -12,7 +12,7 @@ public class Character : MonoBehaviour
     public bool isAgent, isMoving;
     private bool breathOut;
     public float incrementBreathRate, rotationSpeed;
-    //z racji tego że nie wiem po co jest ten array to zrobiłem sobie swój
+
     public Transform[] bodyParts;
     public List<Transform> rotatingBodyparts;
     public Transform head;
