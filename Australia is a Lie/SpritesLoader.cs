@@ -14,7 +14,6 @@ public class SpritesLoader : MonoBehaviour
     public static void FillBodyparts()
     {
         List<BodyPart> allBodyParts = FindObjectsOfType<BodyPart>().ToList();
-        //testClasss test = FindObjectOfType<testClasss>();
 
         List<string> differencesSprites = FindAssetsPath(charactersFolder + differencesFolder);
         List<string> setsSprites = FindAssetsPath(charactersFolder + setsFolder);
@@ -44,12 +43,6 @@ public class SpritesLoader : MonoBehaviour
                 bp.OnValidate();
             }
         }
-        //foreach(string s in assets)
-        //{
-        //    string path = AssetDatabase.GUIDToAssetPath(s);
-        //    Debug.Log(path);
-        //}
-
     }
 
     static List<string> FindAssetsPath(string folderPath)
